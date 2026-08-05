@@ -1,0 +1,10 @@
+# Rust build artifacts
+/target
+
+# Python (addon + test driver)
+__pycache__/
+*.py[oc]
+.venv
+
+# macOS
+.DS_Store
