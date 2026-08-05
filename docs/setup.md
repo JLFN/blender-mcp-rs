@@ -1,55 +1,153 @@
-# Building and setting up blender-mcp-rs
+# blender-mcp-rs — Setup and Verification Procedure
 
-This guide covers installing Blender, building the Rust MCP server, launching
-Blender with the addon, connecting an MCP client, and verifying everything
-works. It matches the setup on this machine but works on any Linux box with a
-local Blender.
+| Item | Value |
+| --- | --- |
+| Document ID | DOC-BMR-SETUP-001 |
+| Status | Released |
+| Version | 2.0 |
+| Last reviewed | 2026-08-05 |
+| Applicable to | blender-mcp-rs v1.8.0 (all platforms with a local Blender) |
 
-## 1. Install Blender
+## 0. Purpose and Scope
 
-Download the Linux build of Blender and unpack it into your `~/bin` folder so
-the `blender` command is on PATH:
+This document defines the controlled procedure for installing, building,
+configuring, and verifying the blender-mcp-rs MCP server and its companion
+Blender addon. It is the normative how-to for this repository.
 
-    mkdir -p ~/bin
-    tar -xf blender-5.x.x-linux-x64.tar.xz -C ~/bin
-    ln -sf ~/bin/blender-5.x.x-linux-x64/blender ~/bin/blender
-    blender --version
+In scope:
 
-Requirements: a display server (X11 or Wayland) for GUI use. Headless runs
-(`blender -b`) work for tests but the addon's command timer never fires
-there, so real usage needs a window (or `xvfb-run -a blender`).
+1. Installation of the Blender runtime into the user bin directory.
+2. Compilation of the Rust MCP server binary.
+3. Launch of Blender with the addon in GUI and headless modes.
+4. Registration of the server with an MCP client (Claude Desktop, Open Grok).
+5. Verification of the full chain (client to addon to Blender) and acceptance
+   criteria.
 
-## 2. Build the Rust server
+Out of scope: Blender addon development, non-Linux platforms, and the
+original Python server (removed; see Known Limitations).
 
-Requires a stable Rust toolchain (edition 2021). No Blender needed to build.
+## 1. References
 
-    cd blender-mcp-rs
+| Reference | Description |
+| --- | --- |
+| RFC 2119 | Key words for requirements levels (MUST, SHOULD, MAY) |
+| MCP specification | Model Context Protocol, stdio transport |
+| Cargo book | Rust build system, edition 2021 |
+| Original project | ahujasid/blender-mcp (upstream Python reference) |
+
+## 2. Definitions and Abbreviations
+
+| Term | Meaning |
+| --- | --- |
+| Addon | addon/addon.py, the Python bridge that runs inside Blender |
+| Server | The Rust binary target/release/blender-mcp-rs |
+| Addon socket | TCP JSON socket bound by the addon, default 127.0.0.1:9876 |
+| MCP client | Any program speaking MCP over stdio (Claude, Grok, ...) |
+
+## 3. Prerequisites
+
+Before starting, confirm the following. Each MUST hold:
+
+1. A Linux host with a display server (X11 or Wayland) for GUI operation.
+   Headless operation requires a window or xvfb-run.
+2. A stable Rust toolchain supporting edition 2021 (cargo 1.97 or newer).
+3. Network access to download Blender (https://www.blender.org/download/)
+   and to fetch crates from crates.io.
+4. The repository checked out at /data/blender-mcp-rs (this machine) or the
+   equivalent path on the target host.
+5. No process currently bound to the addon port 9876, unless reusing an
+   existing live session.
+
+Verification of prerequisites:
+
+    blender --version        # only if already installed; see section 4
+    cargo --version          # must report edition-2021-capable toolchain
+
+## 4. Procedure 1 — Install Blender into the user bin folder
+
+Purpose: place the Blender runtime in ~/bin so the blender command is on
+PATH and desktop shortcuts resolve to a stable location.
+
+Steps:
+
+1. Download the Linux archive (for example blender-5.1.2-linux-x64.tar.xz).
+2. Unpack into ~/bin:
+
+       mkdir -p ~/bin
+       tar -xf blender-5.1.2-linux-x64.tar.xz -C ~/bin
+
+3. Create the PATH symlink:
+
+       ln -sf ~/bin/blender-5.1.2-linux-x64/blender ~/bin/blender
+
+4. Update desktop launchers that referenced the previous install location
+   (~/.local/share/applications/Blender.desktop and blender.desktop, plus any
+   copies on the Desktop): point both Exec and Icon entries at the new path.
+
+Verification (all MUST pass):
+
+    which blender          # resolves under ~/bin
+    blender --version      # reports the expected 5.1.2 build
+    grep -rl 'blender-5' ~/.local/share/applications/*.desktop  # new path only
+    grep -rl '/home/leandro/Documents/blender' ~/.local/share/applications/*.desktop
+                           # must produce no output (old path gone)
+
+## 5. Procedure 2 — Build the Rust server
+
+Purpose: produce the stdio MCP server binary. No Blender installation is
+required to build.
+
+Steps:
+
+    cd /data/blender-mcp-rs
     cargo build --release
 
-The binary is `target/release/blender-mcp-rs`. It speaks MCP over stdio and
-is meant to be launched by an MCP client, not run directly in a terminal.
+Verification (all MUST pass):
 
-## 3. Launch Blender with the addon
+1. cargo reports a successful build with no warnings.
+2. target/release/blender-mcp-rs exists and is executable.
+3. cargo doc --no-deps builds with zero warnings (the crate enforces
+   #![warn(missing_docs)]).
+4. cargo test passes all 50 tests (mock-server wire tests, per-tool output
+   tests, bbox unit tests, and the headless Blender integration test).
 
-Clone or copy this repo so `addon/addon.py` is available, then start a
-windowed Blender with the addon loaded and its socket server auto-started:
+The binary speaks MCP over stdio only; it is NOT meant to be executed
+directly in a terminal. It will idle on stdin awaiting a client handshake.
 
-    blender --python tests/live/start_live.py -- <absolute/path/to/addon.py>
+## 6. Procedure 3 — Launch Blender with the addon (GUI, production path)
 
-The addon binds a TCP JSON socket on `127.0.0.1:9876` (the scene property
-`blendermcp_port`). The launch script enables all four integrations
-(PolyHaven, Sketchfab, Hyper3D, Hunyuan3D) and adds a test cube at (1,2,3).
-Wait for `LIVE_READY port=9876` in the log.
+Purpose: start a windowed Blender session with the addon registered and its
+socket server auto-started. This is the production path: bpy.app.timers fire
+only in windowed mode, so commands execute on the main thread exactly as they
+do in normal interactive use.
 
-You can also install the addon normally in Blender (Edit > Preferences >
-Add-ons > Install from Disk) and tick "Auto-Start Server" in the addon
-preferences; the sidebar panel (press N) shows the server controls and lets
-you set API keys and the port.
+Steps:
 
-## 4. Configure an MCP client
+    blender --python tests/live/start_live.py -- /data/blender-mcp-rs/addon/addon.py
 
-Point your MCP client at the built binary with stdio transport, for example
-in Claude Desktop's `claude_desktop_config.json`:
+The launcher registers the addon (auto-starting the socket server on port
+9876, controlled by the scene property blendermcp_port), enables all four
+integrations (PolyHaven, Sketchfab, Hyper3D, Hunyuan3D), and adds a test cube
+at (1,2,3).
+
+Verification:
+
+1. The Blender window opens on the display.
+2. The log prints LIVE_READY port=9876.
+3. Optionally install the addon through Edit > Preferences > Add-ons >
+   Install from Disk and tick Auto-Start Server; the sidebar panel (press N)
+   exposes server controls and API key fields.
+
+Headless variant (test path only): blender -b -P tests/driver/
+blender_test_driver.py -- <addon path> <port>. The driver mirrors the
+addon's real _handle_client loop (one connection serves many commands), which
+exercises the reused-socket behavior of the client.
+
+## 7. Procedure 4 — Register the server with an MCP client
+
+Purpose: make the 22 tools discoverable to an MCP client over stdio.
+
+Claude Desktop — claude_desktop_config.json:
 
     {
       "mcpServers": {
@@ -60,59 +158,80 @@ in Claude Desktop's `claude_desktop_config.json`:
       }
     }
 
-Registering in Grok (Open Grok TUI):
+Open Grok (TUI):
 
     open-grok mcp add blender -- /data/blender-mcp-rs/target/release/blender-mcp-rs
     open-grok mcp doctor blender
     open-grok mcp list
 
-Tools are namespaced `blender__<tool>` (for example `blender__get_scene_info`).
-A server added after the session started needs a refresh (`/mcps`, press `r`)
-or a session restart before it appears.
+Verification (all MUST pass):
 
-The server announces 22 tools plus the `asset_creation_strategy` prompt.
-Environment variables honored: `BLENDER_HOST` (default `localhost`) and
-`BLENDER_PORT` (default `9876`) for the addon socket, and `RUST_LOG` (default
-`info`) for logging to stderr. The client resolves the host across IPv4 and
-IPv6 exactly like Python's `socket.create_connection`, so the addon may bind
-either family.
+1. open-grok mcp doctor blender reports handshake OK and 22 tools.
+2. Tools are namespaced blender__<tool>, for example blender__get_scene_info
+   and blender__execute_blender_code.
+3. A server registered after a session started requires a refresh (/mcps,
+   press r) or a session restart before it appears in that session.
 
-## 5. Verify it works
+Environment variables honored by the server (all optional): BLENDER_HOST
+(default localhost), BLENDER_PORT (default 9876) for the addon socket, and
+RUST_LOG (default info) for stderr logging. The client resolves the host
+across IPv4 and IPv6 in order, exactly like Python's socket.create_connection,
+so the addon may bind either address family.
 
-Run the live check against a running Blender + addon:
+## 8. Procedure 5 — Live verification and acceptance criteria
 
-    cd blender-mcp-rs
+Purpose: prove the full chain works against a real, running Blender.
+
+Steps:
+
+    cd /data/blender-mcp-rs
     cargo run --example live_check -- 9876
 
-Exit code 0 and `LIVE_CHECK_PASS` mean scene info, object info, the
-unknown-object error path, code execution, and all four integration status
-tools respond correctly.
+Acceptance criteria — the live check exits 0 and prints LIVE_CHECK_PASS only
+when ALL of the following hold:
 
-Automated tests (mock server + headless real Blender):
+1. get_scene_info returns the live scene containing the test cube at (1,2,3).
+2. get_object_info returns MESH topology (vertex count) for the cube.
+3. An unknown object returns the documented error path ("Object not found").
+4. execute_blender_code round-trips output through the GUI timer hop.
+5. All four integration status tools respond; PolyHaven and Hunyuan3D report
+   enabled (no credentials required), Sketchfab reports enabled only when a
+   valid API key is stored, Hyper3D reports disabled until an API key is set.
 
-    cargo test
+Automated regression: cargo test runs the same assertions headless against a
+mock server and a real headless Blender. The integration test locates Blender
+via BLENDER_BIN, then ~/bin/blender-5.1.2-linux-x64/blender, then blender on
+PATH; it skips with a notice when no Blender is found.
 
-The integration test finds Blender via `BLENDER_BIN`, then
-`~/bin/blender-5.1.2-linux-x64/blender`, then `blender` on PATH, and skips
-with a notice when no Blender is installed.
+## 9. Known Limitations
 
-## 6. Documentation
+1. The addon cannot be ported to Rust: it drives bpy from inside Blender's
+   Python interpreter. It ships unmodified.
+2. bpy.app.timers never fire in headless mode, so real usage requires a
+   window or xvfb-run; headless is for testing only.
+3. Telemetry from the original server is removed by design and is not
+   re-implemented; no metrics leave the process.
+4. The Hyper3D image-URL branch validates the URL list (the Python original
+   validated a variable that is always None, so that branch always failed).
+   This is an intentional documented divergence.
+5. One cosmetic f64 formatting difference exists in a Sketchfab download line
+   (2 vs 2.0); output content is otherwise byte-identical to the original.
+6. Screenshots render offscreen (GPU-independent); if no GPU context is
+   available the tool reports an error instead of returning a black image.
 
-Generate the rustdoc API reference:
+## 10. Troubleshooting
 
-    cargo doc --open
+| Symptom | Cause | Resolution |
+| --- | --- | --- |
+| "cannot start server in background mode" | Launched with blender -b | Use windowed launch or the headless driver |
+| Addon answers "unexpected keyword argument" | A tool forwarded an extra param | Only documented params are ever sent; file a bug |
+| Port 9876 in use | Another Blender/server holds it | Stop it, or change blendermcp_port and mirror it in the client |
+| Black screenshots | GPU context unavailable | Offscreen rendering; expected without a usable context |
+| Tools missing in Grok session | Server registered after session start | /mcps, press r, or restart the session |
 
-The crate enforces `#![warn(missing_docs)]`, so every public item carries a
-doc comment and the generated docs are complete.
+## 11. Revision History
 
-## Troubleshooting
-
-- "cannot start server in background mode": you launched with `blender -b`.
-  Use a windowed launch or the headless test driver.
-- Addon answers "unexpected keyword argument": a tool forwarded a param the
-  addon handler does not take. Only the documented params are ever sent.
-- Port 9876 in use: stop the other Blender/server or change
-  `blendermcp_port` in the scene (and set the same port in the client).
-- Screenshots come back black: the Rust tool renders the viewport offscreen
-  (GPU-independent); if the GPU context is unavailable it reports an error
-  instead of returning a black image.
+| Version | Date | Change |
+| --- | --- | --- |
+| 1.0 | 2026-08-05 | Initial release of the guide |
+| 2.0 | 2026-08-05 | Restructured to controlled document format (this revision) |

@@ -52,11 +52,12 @@ The Blender addon must be installed and its server started (or launched via
 
 ## Setup
 
-See [docs/setup.md](docs/setup.md) for the full guide: installing Blender
-into `~/bin`, launching it with the addon (GUI and headless), wiring up an
-MCP client such as Claude Desktop, running the live check, and the
-environment variables the server honors (`BLENDER_HOST`, `BLENDER_PORT`,
-`RUST_LOG`).
+See [docs/setup.md](docs/setup.md) for the controlled setup and verification
+procedure (DOC-BMR-SETUP-001): installing Blender into `~/bin`, building the
+server, launching it with the addon (GUI and headless), wiring up an MCP
+client such as Claude Desktop or Open Grok, the live check with acceptance
+criteria, known limitations, and the environment variables the server honors
+(`BLENDER_HOST`, `BLENDER_PORT`, `RUST_LOG`).
 
 The project also ships a Grok skill at `.opengrok/skills/blender-mcp/` that
 documents the same workflow for AI agents, including every tool and its
