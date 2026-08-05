@@ -23,7 +23,9 @@ use std::time::Duration;
 use serde_json::{Map, Value};
 
 /// Default connection parameters, matching the Python module's constants.
+/// Default Blender host address, used when `BLENDER_HOST` is not set.
 pub const DEFAULT_HOST: &str = "localhost";
+/// Default TCP port the Blender addon socket server listens on.
 pub const DEFAULT_PORT: u16 = 9876;
 
 /// How long to wait for a complete response from the addon. Matches the addon's
@@ -36,10 +38,12 @@ const BUFFER_SIZE: usize = 8192;
 /// Error type returned by the Blender connection layer.
 #[derive(Debug, Clone)]
 pub struct BlenderError {
+    /// Human-readable description of the error.
     pub message: String,
 }
 
 impl BlenderError {
+    /// Create a new error from any string-convertible message.
     pub fn new(message: impl Into<String>) -> Self {
         Self {
             message: message.into(),
@@ -85,6 +89,7 @@ pub struct BlenderConnection {
 }
 
 impl BlenderConnection {
+    /// Create a connection to the given Blender host and port.
     pub fn new(host: impl Into<String>, port: u16) -> Self {
         Self {
             host: host.into(),
@@ -115,10 +120,14 @@ impl BlenderConnection {
         if inner.sock.is_some() {
             return true;
         }
+        // Mirror Python's `socket.create_connection`: try every address the
+        // host resolves to (for example `localhost` -> `::1` then `127.0.0.1`)
+        // until one connects, instead of giving up on the first failure.
         let addr = (self.host.as_str(), self.port);
+        let mut last_error: Option<std::io::Error> = None;
         match addr.to_socket_addrs() {
-            Ok(mut addrs) => {
-                if let Some(resolved) = addrs.next() {
+            Ok(addrs) => {
+                for resolved in addrs {
                     match TcpStream::connect(resolved) {
                         Ok(stream) => {
                             let _ = stream.set_read_timeout(Some(RESPONSE_TIMEOUT));
@@ -128,23 +137,25 @@ impl BlenderConnection {
                                 "connected to Blender"
                             );
                             inner.sock = Some(stream);
-                            true
+                            return true;
                         }
                         Err(e) => {
-                            tracing::error!(
-                                host = %self.host,
-                                port = self.port,
-                                error = %e,
-                                "failed to connect to Blender"
-                            );
-                            inner.sock = None;
-                            false
+                            last_error = Some(e);
                         }
                     }
-                } else {
-                    tracing::error!(host = %self.host, port = self.port, "could not resolve Blender host");
-                    false
                 }
+                if let Some(e) = last_error {
+                    tracing::error!(
+                        host = %self.host,
+                        port = self.port,
+                        error = %e,
+                        "failed to connect to Blender on any address"
+                    );
+                } else {
+                    tracing::error!(host = %self.host, port = self.port, "no addresses resolved for Blender host");
+                }
+                inner.sock = None;
+                false
             }
             Err(e) => {
                 tracing::error!(error = %e, "could not resolve Blender host");

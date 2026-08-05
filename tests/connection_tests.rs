@@ -49,6 +49,21 @@ fn roundtrip_returns_result_and_sends_exact_command() {
 }
 
 #[test]
+fn hostname_resolution_tries_every_address() {
+    // The addon binds 127.0.0.1 only. On this machine `localhost` resolves to
+    // `::1` first, so the client must fall back to the IPv4 address exactly
+    // like Python's socket.create_connection does. Without the fallback this
+    // fails with "Not connected to Blender".
+    let mock = MockBlender::new();
+    mock.respond("get_scene_info", json!({ "status": "success", "result": "OK" }));
+
+    let mut c = BlenderConnection::new("localhost", mock.port());
+    c.set_timeout(Duration::from_secs(10));
+    let result = c.send_command("get_scene_info", None).unwrap();
+    assert_eq!(result, json!("OK"));
+}
+
+#[test]
 fn params_are_forwarded_verbatim() {
     let mock = MockBlender::new();
     mock.respond("execute_code", json!({ "status": "success", "result": {} }));
