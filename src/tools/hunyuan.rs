@@ -7,26 +7,37 @@ use crate::connection::BlenderConnection;
 use crate::util::{is_truthy, to_json_pretty};
 use rmcp::schemars;
 
+/// Request for the get_hunyuan3d_status tool: checks the Hunyuan3D addon state.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, Default)]
 pub struct GetHunyuan3dStatusRequest {
+    /// The original user prompt that led to this tool call; never forwarded to the addon.
     pub user_prompt: Option<String>,
 }
 
+/// Request for the generate_hunyuan3d_model tool: generates a model from a prompt and/or image.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, Default)]
 pub struct GenerateHunyuan3dModelRequest {
+    /// Optional short description of the desired model.
     pub text_prompt: Option<String>,
+    /// Optional local or remote URL of an input reference image.
     pub input_image_url: Option<String>,
+    /// The original user prompt that led to this tool call; never forwarded to the addon.
     pub user_prompt: Option<String>,
 }
 
+/// Request for the poll_hunyuan_job_status tool: polls a Hunyuan3D generation job.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, Default)]
 pub struct PollHunyuanJobStatusRequest {
+    /// Job ID (format job_xxx) from the generate step.
     pub job_id: Option<String>,
 }
 
+/// Request for the import_generated_asset_hunyuan tool: imports a finished Hunyuan3D model.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, Default)]
 pub struct ImportGeneratedAssetHunyuanRequest {
+    /// Name of the object in the scene.
     pub name: String,
+    /// URL of the generated model ZIP from the generate step.
     pub zip_file_url: Option<String>,
 }
 

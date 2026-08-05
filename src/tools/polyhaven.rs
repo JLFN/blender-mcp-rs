@@ -7,15 +7,20 @@ use crate::connection::BlenderConnection;
 use crate::util::{get_bool, join_strings_array};
 use rmcp::schemars;
 
+/// Request for the get_polyhaven_status tool: checks the PolyHaven addon state.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, Default)]
 pub struct GetPolyHavenStatusRequest {
+    /// The original user prompt that led to this tool call; never forwarded to the addon.
     pub user_prompt: Option<String>,
 }
 
+/// Request for the get_polyhaven_categories tool: lists categories for an asset type.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, Default)]
 pub struct GetPolyHavenCategoriesRequest {
+    /// Type of asset to get categories for (hdris, textures, models, all).
     #[serde(default = "default_hdris")]
     pub asset_type: String,
+    /// The original user prompt that led to this tool call; never forwarded to the addon.
     pub user_prompt: Option<String>,
 }
 
@@ -23,11 +28,15 @@ fn default_hdris() -> String {
     "hdris".to_string()
 }
 
+/// Request for the search_polyhaven_assets tool: searches PolyHaven with optional filters.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, Default)]
 pub struct SearchPolyHavenAssetsRequest {
+    /// Type of assets to search for (hdris, textures, models, all).
     #[serde(default = "default_all")]
     pub asset_type: String,
+    /// Optional comma-separated list of categories to filter by.
     pub categories: Option<String>,
+    /// The original user prompt that led to this tool call; never forwarded to the addon.
     pub user_prompt: Option<String>,
 }
 
@@ -35,13 +44,19 @@ fn default_all() -> String {
     "all".to_string()
 }
 
+/// Request for the download_polyhaven_asset tool: downloads and imports an asset.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, Default)]
 pub struct DownloadPolyHavenAssetRequest {
+    /// The PolyHaven asset ID to download.
     pub asset_id: String,
+    /// Type of asset (hdris, textures, models).
     pub asset_type: String,
+    /// Resolution to download (e.g. 1k, 2k, 4k).
     #[serde(default = "default_1k")]
     pub resolution: String,
+    /// Optional file format (e.g. hdr/exr for HDRIs, jpg/png for textures, gltf/fbx for models).
     pub file_format: Option<String>,
+    /// The original user prompt that led to this tool call; never forwarded to the addon.
     pub user_prompt: Option<String>,
 }
 
@@ -49,10 +64,14 @@ fn default_1k() -> String {
     "1k".to_string()
 }
 
+/// Request for the set_texture tool: applies a downloaded PolyHaven texture.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, Default)]
 pub struct SetTextureRequest {
+    /// Name of the object to apply the texture to.
     pub object_name: String,
+    /// ID of the PolyHaven texture to apply (must be downloaded first).
     pub texture_id: String,
+    /// The original user prompt that led to this tool call; never forwarded to the addon.
     pub user_prompt: Option<String>,
 }
 

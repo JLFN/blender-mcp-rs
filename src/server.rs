@@ -369,6 +369,9 @@ impl BlenderServer {
 // Prompt
 // ---------------------------------------------------------------------------
 
+// The `#[prompt]` macro generates a `pub` metadata function without a doc
+// comment (unlike `#[tool]`), so allow the lint for that generated item.
+#[allow(missing_docs)]
 #[prompt_router]
 impl BlenderServer {
     /// Defines the preferred strategy for creating assets in Blender

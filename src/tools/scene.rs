@@ -11,21 +11,29 @@ use rmcp::model::{CallToolResult, ContentBlock};
 use rmcp::schemars;
 use rmcp::ErrorData;
 
+/// Request for the get_scene_info tool: reports the current Blender scene.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, Default)]
 pub struct GetSceneInfoRequest {
+    /// The original user prompt that led to this tool call; never forwarded to the addon.
     pub user_prompt: Option<String>,
 }
 
+/// Request for the get_object_info tool: queries one named object's details.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, Default)]
 pub struct GetObjectInfoRequest {
+    /// Name of the object to query.
     pub object_name: String,
+    /// The original user prompt that led to this tool call; never forwarded to the addon.
     pub user_prompt: Option<String>,
 }
 
+/// Request for the get_viewport_screenshot tool: captures the 3D viewport.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, Default)]
 pub struct GetViewportScreenshotRequest {
+    /// Largest dimension of the captured screenshot in pixels.
     #[serde(default = "default_max_size")]
     pub max_size: u32,
+    /// The original user prompt that led to this tool call; never forwarded to the addon.
     pub user_prompt: Option<String>,
 }
 
@@ -33,9 +41,12 @@ fn default_max_size() -> u32 {
     1000
 }
 
+/// Request for the execute_blender_code tool: runs raw Python inside Blender.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, Default)]
 pub struct ExecuteBlenderCodeRequest {
+    /// Python code to execute inside Blender.
     pub code: String,
+    /// The original user prompt that led to this tool call; never forwarded to the addon.
     pub user_prompt: Option<String>,
 }
 

@@ -14,6 +14,7 @@ use serde_json::{Number, Value};
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(transparent)]
 pub struct BboxCondition {
+    /// The normalized Length/Width/Height ratios, each in the range 0..=100.
     pub values: Vec<i64>,
 }
 

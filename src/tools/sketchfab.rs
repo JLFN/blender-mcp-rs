@@ -10,19 +10,27 @@ use rmcp::model::{CallToolResult, ContentBlock};
 use rmcp::schemars;
 use rmcp::ErrorData;
 
+/// Request for the get_sketchfab_status tool: checks the Sketchfab addon state.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, Default)]
 pub struct GetSketchfabStatusRequest {
+    /// The original user prompt that led to this tool call; never forwarded to the addon.
     pub user_prompt: Option<String>,
 }
 
+/// Request for the search_sketchfab_models tool: searches Sketchfab with optional filters.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, Default)]
 pub struct SearchSketchfabModelsRequest {
+    /// Text to search for.
     pub query: String,
+    /// Optional comma-separated list of categories.
     pub categories: Option<String>,
+    /// Maximum number of results to return.
     #[serde(default = "default_count")]
     pub count: i64,
+    /// Whether to include only downloadable models.
     #[serde(default = "default_true")]
     pub downloadable: bool,
+    /// The original user prompt that led to this tool call; never forwarded to the addon.
     pub user_prompt: Option<String>,
 }
 
@@ -34,16 +42,23 @@ fn default_true() -> bool {
     true
 }
 
+/// Request for the get_sketchfab_model_preview tool: fetches a model thumbnail.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, Default)]
 pub struct GetSketchfabModelPreviewRequest {
+    /// Unique identifier of the Sketchfab model to preview.
     pub uid: String,
+    /// The original user prompt that led to this tool call; never forwarded to the addon.
     pub user_prompt: Option<String>,
 }
 
+/// Request for the download_sketchfab_model tool: downloads and imports a model.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, Default)]
 pub struct DownloadSketchfabModelRequest {
+    /// Unique identifier of the Sketchfab model to download.
     pub uid: String,
+    /// Target size in Blender units for the largest dimension of the model.
     pub target_size: f64,
+    /// The original user prompt that led to this tool call; never forwarded to the addon.
     pub user_prompt: Option<String>,
 }
 

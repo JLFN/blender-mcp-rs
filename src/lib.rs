@@ -10,6 +10,7 @@
 //! The port was performed 1:1 against the Python `src/blender_mcp/server.py`,
 //! with one intentional deviation: telemetry has been removed entirely (no
 //! collection, no consent checks, no uploads).
+#![warn(missing_docs)]
 
 pub mod bbox;
 pub mod connection;

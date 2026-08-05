@@ -14,36 +14,54 @@ use crate::connection::BlenderConnection;
 use crate::util::{is_truthy, to_json_pretty};
 use rmcp::schemars;
 
+/// Request for the get_hyper3d_status tool: checks the Hyper3D Rodin addon state.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, Default)]
 pub struct GetHyper3dStatusRequest {
+    /// The original user prompt that led to this tool call; never forwarded to the addon.
     pub user_prompt: Option<String>,
 }
 
+/// Request for the generate_hyper3d_model_via_text tool: generates a model from a description.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, Default)]
 pub struct GenerateHyper3dModelViaTextRequest {
+    /// Short English description of the desired model.
     pub text_prompt: String,
+    /// Optional Length/Width/Height ratio of the generated model.
     pub bbox_condition: Option<Vec<f64>>,
+    /// The original user prompt that led to this tool call; never forwarded to the addon.
     pub user_prompt: Option<String>,
 }
 
+/// Request for the generate_hyper3d_model_via_images tool: generates a model from reference images.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, Default)]
 pub struct GenerateHyper3dModelViaImagesRequest {
+    /// Absolute paths of the input images; required in MAIN_SITE mode.
     pub input_image_paths: Option<Vec<String>>,
+    /// URLs of the input images; required in FAL_AI mode.
     pub input_image_urls: Option<Vec<String>>,
+    /// Optional Length/Width/Height ratio of the generated model.
     pub bbox_condition: Option<Vec<f64>>,
+    /// The original user prompt that led to this tool call; never forwarded to the addon.
     pub user_prompt: Option<String>,
 }
 
+/// Request for the poll_rodin_job_status tool: polls a Rodin generation job.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, Default)]
 pub struct PollRodinJobStatusRequest {
+    /// Subscription key from the generate step; used in MAIN_SITE mode.
     pub subscription_key: Option<String>,
+    /// Request ID from the generate step; used in FAL_AI mode.
     pub request_id: Option<String>,
 }
 
+/// Request for the import_generated_asset tool: imports a finished Rodin model.
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, Default)]
 pub struct ImportGeneratedAssetRequest {
+    /// Name of the object in the scene.
     pub name: String,
+    /// Task UUID from the generate step; used in MAIN_SITE mode.
     pub task_uuid: Option<String>,
+    /// Request ID from the generate step; used in FAL_AI mode.
     pub request_id: Option<String>,
 }
 
