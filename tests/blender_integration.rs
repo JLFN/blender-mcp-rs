@@ -21,7 +21,7 @@ use serde_json::json;
 use blender_mcp_rs::connection::BlenderConnection;
 
 const DEFAULT_BLENDER: &str =
-    "/home/leandro/Documents/blender-5.1.2-linux-x64/blender";
+    "/home/leandro/bin/blender-5.1.2-linux-x64/blender";
 
 fn blender_bin() -> Option<String> {
     if let Ok(path) = std::env::var("BLENDER_BIN") {
@@ -32,7 +32,14 @@ fn blender_bin() -> Option<String> {
     if std::path::Path::new(DEFAULT_BLENDER).exists() {
         return Some(DEFAULT_BLENDER.to_string());
     }
-    None
+    // Last resort: a `blender` binary on PATH (e.g. ~/bin/blender).
+    match std::process::Command::new("blender")
+        .arg("--version")
+        .output()
+    {
+        Ok(out) if out.status.success() => Some("blender".to_string()),
+        _ => None,
+    }
 }
 
 /// Ephemeral free TCP port for the addon socket.

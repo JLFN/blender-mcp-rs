@@ -66,8 +66,23 @@ The suite covers:
   addon payload).
 - An end-to-end integration test (`tests/blender_integration.rs`) that boots
   the real addon inside a headless local Blender and drives it over TCP. It
-  locates Blender via `BLENDER_BIN` (falling back to a known path) and skips
-  with a notice when no Blender binary is present.
+  locates Blender via `BLENDER_BIN`, then the known `~/bin` path, then
+  `blender` on PATH, and skips with a notice when no Blender binary is
+  present.
+
+## Live test (windowed Blender)
+
+To verify the real production path in a GUI Blender session (the addon's
+`bpy.app.timers` only fire in windowed mode):
+
+    blender --python tests/live/start_live.py -- <abs/path/to/addon.py>
+    cargo run --example live_check -- 9876
+
+`start_live.py` registers the addon (auto-starting the socket server on port
+9876), enables all integrations, and adds a test cube. `live_check` connects
+through the same wire client the tools use and asserts scene info, object
+info, the unknown-object error path, code execution, and all four integration
+status tools; it exits 0 with `LIVE_CHECK_PASS` only when every check passes.
 
 During development, the driver also serves multiple commands per connection,
 exactly like the addon's real `_handle_client` loop, so the reused-socket
