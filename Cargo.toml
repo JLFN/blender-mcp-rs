@@ -2,8 +2,15 @@
 name = "blender-mcp-rs"
 version = "1.8.0"
 edition = "2021"
+rust-version = "1.88"
 description = "Blender integration through the Model Context Protocol (Rust port of blender-mcp)"
 license = "MIT"
+readme = "README.md"
+repository = "https://github.com/JLFN/blender-mcp-rs"
+homepage = "https://github.com/JLFN/blender-mcp-rs"
+documentation = "https://docs.rs/blender-mcp-rs"
+keywords = ["mcp", "blender", "3d", "rmcp", "automation"]
+categories = ["development-tools", "multimedia"]
 
 # Standalone workspace root: /data is a separate multi-project layout.
 [workspace]
