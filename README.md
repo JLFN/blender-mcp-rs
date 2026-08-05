@@ -50,6 +50,18 @@ The binary speaks MCP over stdio. It is meant to be launched by an MCP client
 The Blender addon must be installed and its server started (or launched via
 `xvfb-run -a blender` for headless use).
 
+## Setup
+
+See [docs/setup.md](docs/setup.md) for the full guide: installing Blender
+into `~/bin`, launching it with the addon (GUI and headless), wiring up an
+MCP client such as Claude Desktop, running the live check, and the
+environment variables the server honors (`BLENDER_HOST`, `BLENDER_PORT`,
+`RUST_LOG`).
+
+The project also ships a Grok skill at `.opengrok/skills/blender-mcp/` that
+documents the same workflow for AI agents, including every tool and its
+parameters.
+
 ## Testing
 
     cargo test
@@ -98,6 +110,17 @@ behavior of the client is exercised for real.
 - `src/util.rs` - shared formatting/truthiness helpers
 - `addon/addon.py` - the original Blender addon (must stay Python)
 - `tests/` - mock-server tests and the real-Blender integration test
+- `tests/live/` - the windowed live-test launcher
+- `examples/live_check.rs` - the live-test verification client
+- `docs/setup.md` - build and setup guide
+- `.opengrok/skills/blender-mcp/` - the Grok skill for AI agents
+
+## Documentation
+
+Every public item carries a doc comment (`#![warn(missing_docs)]`), so the
+API reference is complete. Generate it with:
+
+    cargo doc --open
 
 ## License
 
