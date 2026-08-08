@@ -53,8 +53,8 @@ Before starting, confirm the following. Each MUST hold:
 2. A stable Rust toolchain supporting edition 2021 (cargo 1.97 or newer).
 3. Network access to download Blender (https://www.blender.org/download/)
    and to fetch crates from crates.io.
-4. The repository checked out at /data/blender-mcp-rs (this machine) or the
-   equivalent path on the target host.
+4. The repository checked out on the target host, with the addon, tests, and
+   examples reachable from the repo root.
 5. No process currently bound to the addon port 9876, unless reusing an
    existing live session.
 
@@ -89,7 +89,7 @@ Verification (all MUST pass):
     which blender          # resolves under ~/bin
     blender --version      # reports the expected 5.1.2 build
     grep -rl 'blender-5' ~/.local/share/applications/*.desktop  # new path only
-    grep -rl '/home/leandro/Documents/blender' ~/.local/share/applications/*.desktop
+    grep -rl '<previous-install-path>' ~/.local/share/applications/*.desktop
                            # must produce no output (old path gone)
 
 ## 5. Procedure 2 — Build the Rust server
@@ -99,7 +99,7 @@ required to build.
 
 Steps:
 
-    cd /data/blender-mcp-rs
+    cd <repo-root>
     cargo build --release
 
 Verification (all MUST pass):
@@ -123,7 +123,7 @@ do in normal interactive use.
 
 Steps:
 
-    blender --python tests/live/start_live.py -- /data/blender-mcp-rs/addon/addon.py
+    blender --python tests/live/start_live.py -- <repo-root>/addon/addon.py
 
 The launcher registers the addon (auto-starting the socket server on port
 9876, controlled by the scene property blendermcp_port), enables all four
@@ -152,7 +152,7 @@ Claude Desktop — claude_desktop_config.json:
     {
       "mcpServers": {
         "blender": {
-          "command": "/home/<user>/blender-mcp-rs/target/release/blender-mcp-rs",
+          "command": "<abs-path>/blender-mcp-rs",
           "args": []
         }
       }
@@ -160,7 +160,7 @@ Claude Desktop — claude_desktop_config.json:
 
 Open Grok (TUI):
 
-    open-grok mcp add blender -- /data/blender-mcp-rs/target/release/blender-mcp-rs
+    open-grok mcp add blender -- <abs-path-to-binary>
     open-grok mcp doctor blender
     open-grok mcp list
 
@@ -189,7 +189,7 @@ Purpose: prove the full chain works against a real, running Blender.
 
 Steps:
 
-    cd /data/blender-mcp-rs
+    cd <repo-root>
     cargo run --example live_check -- 9876
 
 Acceptance criteria — the live check exits 0 and prints LIVE_CHECK_PASS only

@@ -21,25 +21,24 @@ This skill lets Grok drive a local Blender through the Rust MCP server
 removed). Blender itself is controlled by a Python addon that runs inside it;
 the Rust binary is the MCP bridge between Grok and that addon.
 
-## System layout (this machine)
+## System layout
 
-- Blender installation: `/home/leandro/bin/blender-5.1.2-linux-x64/`
-  (binary at `.../blender`, launched as `blender` from PATH via the symlink
-  `/home/leandro/bin/blender`)
-- Rust repo: `/data/blender-mcp-rs` (library crate + `target/` build)
-- Addon (must stay Python): `/data/blender-mcp-rs/addon/addon.py`
-- Live-test launcher: `/data/blender-mcp-rs/tests/live/start_live.py`
-- Live-check client: `/data/blender-mcp-rs/examples/live_check.rs`
+- Blender installation: a local Blender 5.x whose binary is reachable as
+  `blender` on PATH (or via BLENDER_BIN). The live test uses the version
+  found by BLENDER_BIN, then the known `~/bin` path, then PATH.
+- Rust repo: the blender-mcp-rs checkout (library crate; builds into
+  `target/` or `bin/` via the standard builder)
+- Addon (must stay Python): `<repo>/addon/addon.py`
+- Live-test launcher: `<repo>/tests/live/start_live.py`
+- Live-check client: `<repo>/examples/live_check.rs`
 - MCP socket: the addon listens on `127.0.0.1:9876` by default (scene
   property `blendermcp_port`)
-- Desktop shortcuts: `~/.local/share/applications/Blender.desktop`,
-  `~/.local/share/applications/blender.desktop`, and the desktop copies under
-  `~/Desktop/`, all pointing at `/home/leandro/bin/blender-5.1.2-linux-x64/`
+- Desktop shortcuts: optional; point them at the local Blender binary
 
 ## How the pieces talk
 
 1. Blender runs the addon, which opens a TCP JSON socket server.
-2. The Rust MCP server (`/data/blender-mcp-rs`) connects to that socket and
+2. The Rust MCP server (the blender-mcp-rs binary) connects to that socket and
    sends `{"type": <command>, "params": {...}}`.
 3. The addon executes the command on Blender's main thread (via
    `bpy.app.timers` in GUI mode) and replies
@@ -56,7 +55,7 @@ unknown params, so only ever send the documented tool params (never forward
 
 GUI (production path, timers fire):
 
-    blender --python /data/blender-mcp-rs/tests/live/start_live.py -- /data/blender-mcp-rs/addon/addon.py
+    blender --python <repo>/tests/live/start_live.py -- <repo>/addon/addon.py
 
 This opens a Blender window, registers the addon (auto-starting the server on
 port 9876), enables all four integrations, and adds a test cube at (1,2,3).
@@ -65,7 +64,7 @@ Wait for `LIVE_READY port=9876` in the log.
 Headless (for scripting/tests, no window): use the test driver instead of the
 addon's own server, because `bpy.app.timers` never fire in `blender -b`:
 
-    blender -b -P /data/blender-mcp-rs/tests/driver/blender_test_driver.py -- /data/blender-mcp-rs/addon/addon.py 9876
+    blender -b -P <repo>/tests/driver/blender_test_driver.py -- <repo>/addon/addon.py 9876
 
 The driver calls `execute_command` directly on the main thread and serves
 multiple commands per connection, mirroring the addon's real `_handle_client`.
@@ -80,13 +79,13 @@ tools. It is already registered on this machine as `blender` (user scope,
 `~/.opengrok/config.toml`):
 
     [mcp_servers.blender]
-    command = "/home/leandro/.local/bin/blender-mcp-rs"
+    command = "<abs-path-to-blender-mcp-rs-binary>"
     args = []
     enabled = true
 
 To register (or re-register) it from the CLI:
 
-    open-grok mcp add blender -- /home/leandro/.local/bin/blender-mcp-rs
+    open-grok mcp add blender -- <abs-path-to-blender-mcp-rs-binary>
     open-grok mcp doctor blender       # handshake + tool discovery check
     open-grok mcp list                 # shows all servers, incl. blender
 
@@ -104,7 +103,7 @@ and falls back across IPv4/IPv6, so Blender must be listening on the port.
 
 With a GUI Blender + addon running on port 9876:
 
-    cd /data/blender-mcp-rs && cargo run --example live_check -- 9876
+    cd <repo> && cargo run --example live_check -- 9876
 
 Exit code 0 and `LIVE_CHECK_PASS` mean: scene info (finds Cube.001), object
 info (MESH, 8 vertices, location 1,2,3), the "Object not found" error path,
@@ -112,14 +111,14 @@ info (MESH, 8 vertices, location 1,2,3), the "Object not found" error path,
 
 ## Building and testing the Rust server
 
-    cd /data/blender-mcp-rs
+    cd <repo>
     cargo build --release            # no Blender needed to build
     cargo test                       # 50 tests: unit, mock-server wire tests,
                                      # per-tool output tests, real-Blender headless
                                      # integration test (skips if no Blender)
 
-The integration test finds Blender via `BLENDER_BIN`, else
-`/home/leandro/bin/blender-5.1.2-linux-x64/blender`, else `blender` on PATH.
+The integration test finds Blender via `BLENDER_BIN`, else the known
+`~/bin` path, else `blender` on PATH.
 
 ## MCP tools (all 22)
 
@@ -164,12 +163,11 @@ Plus the asset_creation_strategy prompt, which tells agents how to pick
 between the libraries (Sketchfab for realistic/specific models, PolyHaven for
 generic objects and HDRIs/textures, Hyper3D/Hunyuan3D for custom items).
 
-## Integration statuses on this machine
+## Integration statuses
 
 - PolyHaven: enabled (checkbox only; no key required)
 - Hyper3D: disabled until an API key is set in the sidebar panel
-- Sketchfab: enabled; a real API key is configured (validated live as user
-  JLFN82)
+- Sketchfab: enabled when a valid API key is stored in the sidebar panel
 - Hunyuan3D: enabled in LOCAL_API mode (no credentials required)
 
 ## Workflow guidance

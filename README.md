@@ -1,5 +1,7 @@
 # blender-mcp-rs — Blender integration through the Model Context Protocol
 
+[![crates.io](https://img.shields.io/crates/v/blender-mcp-rs.svg?style=for-the-badge&color=fc8d62&logo=rust)](https://crates.io/crates/blender-mcp-rs)
+[![docs.rs](https://img.shields.io/badge/docs.rs-blender_mcp_rs-66c2a5?style=for-the-badge&labelColor=555555&logo=docs.rs)](https://docs.rs/blender-mcp-rs)
 [![license](https://img.shields.io/badge/license-MIT-97ca00?style=for-the-badge)](LICENSE)
 [![github](https://img.shields.io/badge/github-JLFN_blender_mcp_rs-8da0cb?style=for-the-badge&labelColor=555555&logo=github)](https://github.com/JLFN/blender-mcp-rs)
 
