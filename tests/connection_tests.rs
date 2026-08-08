@@ -55,7 +55,10 @@ fn hostname_resolution_tries_every_address() {
     // like Python's socket.create_connection does. Without the fallback this
     // fails with "Not connected to Blender".
     let mock = MockBlender::new();
-    mock.respond("get_scene_info", json!({ "status": "success", "result": "OK" }));
+    mock.respond(
+        "get_scene_info",
+        json!({ "status": "success", "result": "OK" }),
+    );
 
     let mut c = BlenderConnection::new("localhost", mock.port());
     c.set_timeout(Duration::from_secs(10));
@@ -148,7 +151,10 @@ fn concurrent_commands_on_one_connection_stay_paired() {
 #[test]
 fn dead_socket_reconnects_on_next_command() {
     let mock = MockBlender::new();
-    mock.respond("get_scene_info", json!({ "status": "success", "result": "FIRST" }));
+    mock.respond(
+        "get_scene_info",
+        json!({ "status": "success", "result": "FIRST" }),
+    );
     mock.close_after_first();
 
     let c = conn(mock.port());
@@ -190,7 +196,10 @@ fn garbage_response_is_an_error_and_next_command_reconnects() {
     );
     // The garbage also closes the connection, so the next command reconnects.
     mock.clear_raw();
-    assert_eq!(c.send_command("get_scene_info", None).unwrap(), json!("RECOVERED"));
+    assert_eq!(
+        c.send_command("get_scene_info", None).unwrap(),
+        json!("RECOVERED")
+    );
 }
 
 #[test]

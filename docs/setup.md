@@ -6,7 +6,7 @@
 | Status | Released |
 | Version | 2.0 |
 | Last reviewed | 2026-08-05 |
-| Applicable to | blender-mcp-rs v1.8.0 (all platforms with a local Blender) |
+| Applicable to | blender-mcp-rs v1.9.0 (all platforms with a local Blender) |
 
 ## 0. Purpose and Scope
 
@@ -164,6 +164,11 @@ Open Grok (TUI):
     open-grok mcp doctor blender
     open-grok mcp list
 
+Install the shipped agent skill (so the client knows when and how to use the
+tools):
+
+    cp -r skills/blender-mcp ~/.opengrok/skills/blender-mcp
+
 Verification (all MUST pass):
 
 1. open-grok mcp doctor blender reports handshake OK and 22 tools.
@@ -202,6 +207,9 @@ Automated regression: cargo test runs the same assertions headless against a
 mock server and a real headless Blender. The integration test locates Blender
 via BLENDER_BIN, then ~/bin/blender-5.1.2-linux-x64/blender, then blender on
 PATH; it skips with a notice when no Blender is found.
+
+The automated test layers, quality gates, and release-build verification are
+documented in docs/verification.md.
 
 ## 9. Known Limitations
 

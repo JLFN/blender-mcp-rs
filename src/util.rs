@@ -17,9 +17,7 @@ pub fn get_i64(v: &Value, key: &str) -> i64 {
 
 /// Return the boolean at `key`, else a default.
 pub fn get_bool(v: &Value, key: &str, default: bool) -> bool {
-    v.get(key)
-        .and_then(|x| x.as_bool())
-        .unwrap_or(default)
+    v.get(key).and_then(|x| x.as_bool()).unwrap_or(default)
 }
 
 /// Python-style truthiness for a JSON value, matching `if value:` semantics.

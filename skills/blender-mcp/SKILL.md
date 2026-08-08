@@ -9,6 +9,9 @@ description: >
   download models/textures/HDRI environments, or when the user runs
   /blender-mcp. Includes how to launch Blender with MCP, the full tool list,
   and the live end-to-end check.
+argument-hint: "[scene-objects] [blender-code] [asset-query]"
+when-to-use: blender, 3d model, bpy, scene, viewport, polyhaven, sketchfab, hyper3d, hunyuan, hdri, texture, render, /blender-mcp
+user-invocable: true
 ---
 
 # Blender MCP (blender-mcp-rs)
@@ -77,13 +80,13 @@ tools. It is already registered on this machine as `blender` (user scope,
 `~/.opengrok/config.toml`):
 
     [mcp_servers.blender]
-    command = "/data/blender-mcp-rs/target/release/blender-mcp-rs"
+    command = "/home/leandro/.local/bin/blender-mcp-rs"
     args = []
     enabled = true
 
 To register (or re-register) it from the CLI:
 
-    open-grok mcp add blender -- /data/blender-mcp-rs/target/release/blender-mcp-rs
+    open-grok mcp add blender -- /home/leandro/.local/bin/blender-mcp-rs
     open-grok mcp doctor blender       # handshake + tool discovery check
     open-grok mcp list                 # shows all servers, incl. blender
 
@@ -111,7 +114,7 @@ info (MESH, 8 vertices, location 1,2,3), the "Object not found" error path,
 
     cd /data/blender-mcp-rs
     cargo build --release            # no Blender needed to build
-    cargo test                       # 49 tests: unit, mock-server wire tests,
+    cargo test                       # 50 tests: unit, mock-server wire tests,
                                      # per-tool output tests, real-Blender headless
                                      # integration test (skips if no Blender)
 

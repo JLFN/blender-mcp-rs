@@ -69,8 +69,12 @@ impl MockBlender {
         let connections = Arc::new(AtomicUsize::new(0));
         let stop = Arc::new(AtomicBool::new(false));
 
-        let (cfg, rcvd, conns, stp) =
-            (config.clone(), received.clone(), connections.clone(), stop.clone());
+        let (cfg, rcvd, conns, stp) = (
+            config.clone(),
+            received.clone(),
+            connections.clone(),
+            stop.clone(),
+        );
         let thread = thread::spawn(move || {
             while !stp.load(Ordering::SeqCst) {
                 match listener.accept() {
@@ -192,7 +196,11 @@ impl Drop for MockBlender {
 
 /// Serve one connection: read commands until the client disconnects and reply
 /// to each, mirroring `BlenderMCPServer._handle_client`.
-fn serve_connection(mut stream: TcpStream, config: &Mutex<MockConfig>, received: &Mutex<Vec<Value>>) {
+fn serve_connection(
+    mut stream: TcpStream,
+    config: &Mutex<MockConfig>,
+    received: &Mutex<Vec<Value>>,
+) {
     let (close_immediately, close_after_first, read_then_close, chunk_bytes, raw, hang, responses) = {
         let cfg = config.lock().unwrap();
         (

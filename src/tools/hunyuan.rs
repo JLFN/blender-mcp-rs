@@ -57,7 +57,10 @@ pub fn get_hunyuan3d_status(conn: &BlenderConnection, _req: &GetHunyuan3dStatusR
 }
 
 /// Port of `generate_hunyuan3d_model`.
-pub fn generate_hunyuan3d_model(conn: &BlenderConnection, req: &GenerateHunyuan3dModelRequest) -> String {
+pub fn generate_hunyuan3d_model(
+    conn: &BlenderConnection,
+    req: &GenerateHunyuan3dModelRequest,
+) -> String {
     let params = json!({
         "text_prompt": req.text_prompt,
         "image": req.input_image_url,
@@ -84,7 +87,10 @@ pub fn generate_hunyuan3d_model(conn: &BlenderConnection, req: &GenerateHunyuan3
 }
 
 /// Port of `poll_hunyuan_job_status`.
-pub fn poll_hunyuan_job_status(conn: &BlenderConnection, req: &PollHunyuanJobStatusRequest) -> String {
+pub fn poll_hunyuan_job_status(
+    conn: &BlenderConnection,
+    req: &PollHunyuanJobStatusRequest,
+) -> String {
     let params = json!({ "job_id": req.job_id });
     match conn.send_command("poll_hunyuan_job_status", params.as_object()) {
         Ok(result) => to_json_pretty(&result),
@@ -96,7 +102,10 @@ pub fn poll_hunyuan_job_status(conn: &BlenderConnection, req: &PollHunyuanJobSta
 }
 
 /// Port of `import_generated_asset_hunyuan`.
-pub fn import_generated_asset_hunyuan(conn: &BlenderConnection, req: &ImportGeneratedAssetHunyuanRequest) -> String {
+pub fn import_generated_asset_hunyuan(
+    conn: &BlenderConnection,
+    req: &ImportGeneratedAssetHunyuanRequest,
+) -> String {
     let mut params = serde_json::Map::new();
     params.insert("name".to_string(), Value::String(req.name.clone()));
     if let Some(url) = &req.zip_file_url {

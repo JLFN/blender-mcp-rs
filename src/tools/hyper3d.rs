@@ -113,7 +113,10 @@ fn format_rodin_submission(result: &Value) -> String {
 }
 
 /// Port of `generate_hyper3d_model_via_text`.
-pub fn generate_hyper3d_model_via_text(conn: &BlenderConnection, req: &GenerateHyper3dModelViaTextRequest) -> String {
+pub fn generate_hyper3d_model_via_text(
+    conn: &BlenderConnection,
+    req: &GenerateHyper3dModelViaTextRequest,
+) -> String {
     let bbox = match normalized_bbox(req.bbox_condition.as_ref()) {
         Ok(b) => b,
         Err(e) => return format!("Error generating Hyper3D task: {e}"),
@@ -133,7 +136,10 @@ pub fn generate_hyper3d_model_via_text(conn: &BlenderConnection, req: &GenerateH
 }
 
 /// Port of `generate_hyper3d_model_via_images`.
-pub fn generate_hyper3d_model_via_images(conn: &BlenderConnection, req: &GenerateHyper3dModelViaImagesRequest) -> String {
+pub fn generate_hyper3d_model_via_images(
+    conn: &BlenderConnection,
+    req: &GenerateHyper3dModelViaImagesRequest,
+) -> String {
     if req.input_image_paths.is_some() && req.input_image_urls.is_some() {
         return "Error: Conflict parameters given!".to_string();
     }
@@ -214,7 +220,10 @@ pub fn poll_rodin_job_status(conn: &BlenderConnection, req: &PollRodinJobStatusR
 }
 
 /// Port of `import_generated_asset`.
-pub fn import_generated_asset(conn: &BlenderConnection, req: &ImportGeneratedAssetRequest) -> String {
+pub fn import_generated_asset(
+    conn: &BlenderConnection,
+    req: &ImportGeneratedAssetRequest,
+) -> String {
     let mut params = serde_json::Map::new();
     params.insert("name".to_string(), Value::String(req.name.clone()));
     if let Some(uuid) = &req.task_uuid {

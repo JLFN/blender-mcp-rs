@@ -13,8 +13,8 @@ use serde_json::{json, Value};
 use blender_mcp_rs::connection::BlenderConnection;
 use blender_mcp_rs::tools::{
     hunyuan::{
-        GenerateHunyuan3dModelRequest, GetHunyuan3dStatusRequest, ImportGeneratedAssetHunyuanRequest,
-        PollHunyuanJobStatusRequest,
+        GenerateHunyuan3dModelRequest, GetHunyuan3dStatusRequest,
+        ImportGeneratedAssetHunyuanRequest, PollHunyuanJobStatusRequest,
     },
     hyper3d::{
         GenerateHyper3dModelViaImagesRequest, GenerateHyper3dModelViaTextRequest,
@@ -55,14 +55,13 @@ fn get_scene_info_returns_pretty_json() {
     let c = conn(mock.port());
     let out = blender_mcp_rs::tools::scene::get_scene_info(
         &c,
-        &GetSceneInfoRequest { user_prompt: Some("ignored".into()) },
+        &GetSceneInfoRequest {
+            user_prompt: Some("ignored".into()),
+        },
     );
 
     // json.dumps(result, indent=2) shape.
-    assert_eq!(
-        out,
-        "{\n  \"name\": \"Scene\",\n  \"object_count\": 1\n}"
-    );
+    assert_eq!(out, "{\n  \"name\": \"Scene\",\n  \"object_count\": 1\n}");
     // user_prompt must not reach the addon: params serialize as {}.
     assert_eq!(mock.params_of("get_scene_info"), vec![json!({})]);
 }
@@ -76,10 +75,7 @@ fn get_scene_info_error_is_formatted() {
     );
 
     let c = conn(mock.port());
-    let out = blender_mcp_rs::tools::scene::get_scene_info(
-        &c,
-        &GetSceneInfoRequest::default(),
-    );
+    let out = blender_mcp_rs::tools::scene::get_scene_info(&c, &GetSceneInfoRequest::default());
     assert_eq!(out, "Error getting scene info: boom");
 }
 
@@ -140,10 +136,8 @@ fn get_viewport_screenshot_returns_image_block() {
     );
 
     // The tool reads the PNG it asked Blender to render; plant it first.
-    let temp_path = std::env::temp_dir().join(format!(
-        "blender_screenshot_{}.png",
-        std::process::id()
-    ));
+    let temp_path =
+        std::env::temp_dir().join(format!("blender_screenshot_{}.png", std::process::id()));
     let png_bytes: Vec<u8> = vec![0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 1, 2, 3];
     std::fs::write(&temp_path, &png_bytes).unwrap();
 
@@ -496,7 +490,10 @@ fn sketchfab_preview_returns_image_with_correct_mime() {
     let c = conn(mock.port());
     let result = blender_mcp_rs::tools::sketchfab::get_sketchfab_model_preview(
         &c,
-        &GetSketchfabModelPreviewRequest { uid: "u1".into(), user_prompt: None },
+        &GetSketchfabModelPreviewRequest {
+            uid: "u1".into(),
+            user_prompt: None,
+        },
     )
     .unwrap();
 
@@ -525,7 +522,10 @@ fn sketchfab_preview_invalid_base64_is_tool_error() {
     let c = conn(mock.port());
     let err = blender_mcp_rs::tools::sketchfab::get_sketchfab_model_preview(
         &c,
-        &GetSketchfabModelPreviewRequest { uid: "u1".into(), user_prompt: None },
+        &GetSketchfabModelPreviewRequest {
+            uid: "u1".into(),
+            user_prompt: None,
+        },
     )
     .unwrap_err();
     assert!(err.message.contains("invalid image data"), "{err:?}");
@@ -549,7 +549,11 @@ fn sketchfab_download_formats_normalization() {
     let c = conn(mock.port());
     let out = blender_mcp_rs::tools::sketchfab::download_sketchfab_model(
         &c,
-        &DownloadSketchfabModelRequest { uid: "u1".into(), target_size: 2.0, user_prompt: None },
+        &DownloadSketchfabModelRequest {
+            uid: "u1".into(),
+            target_size: 2.0,
+            user_prompt: None,
+        },
     );
 
     assert_eq!(
@@ -716,7 +720,10 @@ fn hyper3d_generate_via_images_conflict_and_missing_errors() {
     );
     assert_eq!(bad_path, "Error: not all image paths are valid!");
 
-    assert!(mock.received().is_empty(), "no command must reach the addon");
+    assert!(
+        mock.received().is_empty(),
+        "no command must reach the addon"
+    );
 }
 
 #[test]
@@ -756,7 +763,10 @@ fn hyper3d_poll_and_import_build_kwargs_like_python() {
     );
     assert_eq!(
         mock.params_of("poll_rodin_job_status"),
-        vec![json!({ "subscription_key": "sk-9" }), json!({ "request_id": "r-9" })]
+        vec![
+            json!({ "subscription_key": "sk-9" }),
+            json!({ "request_id": "r-9" })
+        ]
     );
 
     // import with task_uuid.
@@ -832,7 +842,9 @@ fn hunyuan_poll_and_import_send_exact_params() {
     let c = conn(mock.port());
     let _ = blender_mcp_rs::tools::hunyuan::poll_hunyuan_job_status(
         &c,
-        &PollHunyuanJobStatusRequest { job_id: Some("job_1".into()) },
+        &PollHunyuanJobStatusRequest {
+            job_id: Some("job_1".into()),
+        },
     );
     let _ = blender_mcp_rs::tools::hunyuan::import_generated_asset_hunyuan(
         &c,

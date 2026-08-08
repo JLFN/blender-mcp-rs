@@ -76,7 +76,7 @@ client such as Claude Desktop or Open Grok, the live check with acceptance
 criteria, known limitations, and the environment variables the server honors
 (`BLENDER_HOST`, `BLENDER_PORT`, `RUST_LOG`).
 
-The project also ships a Grok skill at `.opengrok/skills/blender-mcp/` that
+The project also ships a Grok skill at `skills/blender-mcp/` that
 documents the same workflow for AI agents, including every tool and its
 parameters.
 
@@ -135,7 +135,8 @@ behavior of the client is exercised for real.
 - `tests/live/` — the windowed live-test launcher
 - `examples/live_check.rs` — the live-test verification client
 - `docs/setup.md` — build and setup guide
-- `.opengrok/skills/blender-mcp/` — the Grok skill for AI agents
+- `docs/verification.md` — test layers, quality gates, release verification
+- `skills/blender-mcp/` — the Grok skill for AI agents
 
 ## Documentation
 
@@ -145,6 +146,12 @@ API reference is complete. Generate it with:
 ```console
 cargo doc --open
 ```
+
+The controlled how-to documents live under `docs/`: `setup.md` covers
+installing Blender, building, launching, and registering the server;
+`verification.md` covers the test layers, quality gates, release-build
+verification, and the live acceptance criteria. The agent skill at
+`skills/blender-mcp/SKILL.md` documents the same workflow for Grok.
 
 ## License
 

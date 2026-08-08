@@ -5,10 +5,9 @@
 //! by design: no collection, no consent checks, no uploads.
 
 use rmcp::{
-    ServerHandler,
     handler::server::wrapper::Parameters,
     model::{CallToolResult, PromptMessage, Role, ServerCapabilities, ServerInfo},
-    prompt, prompt_handler, prompt_router, tool, tool_handler, tool_router,
+    prompt, prompt_handler, prompt_router, tool, tool_handler, tool_router, ServerHandler,
 };
 
 use crate::connection::get_blender_connection;
@@ -30,7 +29,10 @@ impl BlenderServer {
     ///
     /// Parameters:
     /// - user_prompt: The original user prompt that led to this tool call
-    #[tool(name = "get_scene_info", description = "Get detailed information about the current Blender scene.")]
+    #[tool(
+        name = "get_scene_info",
+        description = "Get detailed information about the current Blender scene."
+    )]
     fn get_scene_info(&self, Parameters(req): Parameters<scene::GetSceneInfoRequest>) -> String {
         scene::get_scene_info(&get_blender_connection(), &req)
     }
@@ -40,7 +42,10 @@ impl BlenderServer {
     /// Parameters:
     /// - object_name: The name of the object to get information about
     /// - user_prompt: The original user prompt that led to this tool call
-    #[tool(name = "get_object_info", description = "Get detailed information about a specific object in the Blender scene.")]
+    #[tool(
+        name = "get_object_info",
+        description = "Get detailed information about a specific object in the Blender scene."
+    )]
     fn get_object_info(&self, Parameters(req): Parameters<scene::GetObjectInfoRequest>) -> String {
         scene::get_object_info(&get_blender_connection(), &req)
     }
@@ -52,7 +57,10 @@ impl BlenderServer {
     /// - user_prompt: The original user prompt that led to this tool call
     ///
     /// Returns the screenshot as an Image.
-    #[tool(name = "get_viewport_screenshot", description = "Capture a screenshot of the current Blender 3D viewport.")]
+    #[tool(
+        name = "get_viewport_screenshot",
+        description = "Capture a screenshot of the current Blender 3D viewport."
+    )]
     fn get_viewport_screenshot(
         &self,
         Parameters(req): Parameters<scene::GetViewportScreenshotRequest>,
@@ -66,7 +74,10 @@ impl BlenderServer {
     /// Parameters:
     /// - code: The Python code to execute
     /// - user_prompt: The original user prompt that led to this tool call
-    #[tool(name = "execute_blender_code", description = "Execute arbitrary Python code in Blender. Make sure to do it step-by-step by breaking it into smaller chunks.")]
+    #[tool(
+        name = "execute_blender_code",
+        description = "Execute arbitrary Python code in Blender. Make sure to do it step-by-step by breaking it into smaller chunks."
+    )]
     fn execute_blender_code(
         &self,
         Parameters(req): Parameters<scene::ExecuteBlenderCodeRequest>,
@@ -76,7 +87,10 @@ impl BlenderServer {
 
     /// Check if PolyHaven integration is enabled in Blender.
     /// Returns a message indicating whether PolyHaven features are available.
-    #[tool(name = "get_polyhaven_status", description = "Check if PolyHaven integration is enabled in Blender.")]
+    #[tool(
+        name = "get_polyhaven_status",
+        description = "Check if PolyHaven integration is enabled in Blender."
+    )]
     fn get_polyhaven_status(
         &self,
         Parameters(req): Parameters<polyhaven::GetPolyHavenStatusRequest>,
@@ -89,7 +103,10 @@ impl BlenderServer {
     /// Parameters:
     /// - asset_type: The type of asset to get categories for (hdris, textures, models, all)
     /// - user_prompt: The original user prompt that led to this tool call
-    #[tool(name = "get_polyhaven_categories", description = "Get a list of categories for a specific asset type on Polyhaven.")]
+    #[tool(
+        name = "get_polyhaven_categories",
+        description = "Get a list of categories for a specific asset type on Polyhaven."
+    )]
     fn get_polyhaven_categories(
         &self,
         Parameters(req): Parameters<polyhaven::GetPolyHavenCategoriesRequest>,
@@ -105,7 +122,10 @@ impl BlenderServer {
     /// - user_prompt: The original user prompt that led to this tool call
     ///
     /// Returns a list of matching assets with basic information.
-    #[tool(name = "search_polyhaven_assets", description = "Search for assets on Polyhaven with optional filtering.")]
+    #[tool(
+        name = "search_polyhaven_assets",
+        description = "Search for assets on Polyhaven with optional filtering."
+    )]
     fn search_polyhaven_assets(
         &self,
         Parameters(req): Parameters<polyhaven::SearchPolyHavenAssetsRequest>,
@@ -123,7 +143,10 @@ impl BlenderServer {
     /// - user_prompt: The original user prompt that led to this tool call
     ///
     /// Returns a message indicating success or failure.
-    #[tool(name = "download_polyhaven_asset", description = "Download and import a Polyhaven asset into Blender.")]
+    #[tool(
+        name = "download_polyhaven_asset",
+        description = "Download and import a Polyhaven asset into Blender."
+    )]
     fn download_polyhaven_asset(
         &self,
         Parameters(req): Parameters<polyhaven::DownloadPolyHavenAssetRequest>,
@@ -138,14 +161,20 @@ impl BlenderServer {
     /// - texture_id: ID of the Polyhaven texture to apply (must be downloaded first)
     ///
     /// Returns a message indicating success or failure.
-    #[tool(name = "set_texture", description = "Apply a previously downloaded Polyhaven texture to an object.")]
+    #[tool(
+        name = "set_texture",
+        description = "Apply a previously downloaded Polyhaven texture to an object."
+    )]
     fn set_texture(&self, Parameters(req): Parameters<polyhaven::SetTextureRequest>) -> String {
         polyhaven::set_texture(&get_blender_connection(), &req)
     }
 
     /// Check if Hyper3D Rodin integration is enabled in Blender.
     /// Returns a message indicating whether Hyper3D Rodin features are available.
-    #[tool(name = "get_hyper3d_status", description = "Check if Hyper3D Rodin integration is enabled in Blender.")]
+    #[tool(
+        name = "get_hyper3d_status",
+        description = "Check if Hyper3D Rodin integration is enabled in Blender."
+    )]
     fn get_hyper3d_status(
         &self,
         Parameters(req): Parameters<hyper3d::GetHyper3dStatusRequest>,
@@ -164,7 +193,10 @@ impl BlenderServer {
     /// - bbox_condition: Optional. If given, it has to be a list of floats of length 3. Controls the ratio between [Length, Width, Height] of the model.
     ///
     /// Returns a message indicating success or failure.
-    #[tool(name = "generate_hyper3d_model_via_text", description = "Generate 3D asset using Hyper3D by giving description of the desired asset, and import the asset into Blender.")]
+    #[tool(
+        name = "generate_hyper3d_model_via_text",
+        description = "Generate 3D asset using Hyper3D by giving description of the desired asset, and import the asset into Blender."
+    )]
     fn generate_hyper3d_model_via_text(
         &self,
         Parameters(req): Parameters<hyper3d::GenerateHyper3dModelViaTextRequest>,
@@ -186,7 +218,10 @@ impl BlenderServer {
     /// Only one of {input_image_paths, input_image_urls} should be given at a time,
     /// depending on the Hyper3D Rodin's current mode.
     /// Returns a message indicating success or failure.
-    #[tool(name = "generate_hyper3d_model_via_images", description = "Generate 3D asset using Hyper3D by giving images of the wanted asset, and import the generated asset into Blender.")]
+    #[tool(
+        name = "generate_hyper3d_model_via_images",
+        description = "Generate 3D asset using Hyper3D by giving images of the wanted asset, and import the generated asset into Blender."
+    )]
     fn generate_hyper3d_model_via_images(
         &self,
         Parameters(req): Parameters<hyper3d::GenerateHyper3dModelViaImagesRequest>,
@@ -210,7 +245,10 @@ impl BlenderServer {
     /// The task is in progress if status is "IN_PROGRESS".
     /// If status other than "COMPLETED", "IN_PROGRESS", "IN_QUEUE" showed up, the generating process might be failed.
     /// This is a polling API, so only proceed if the status are finally determined ("COMPLETED" or some failed state).
-    #[tool(name = "poll_rodin_job_status", description = "Check if the Hyper3D Rodin generation task is completed.")]
+    #[tool(
+        name = "poll_rodin_job_status",
+        description = "Check if the Hyper3D Rodin generation task is completed."
+    )]
     fn poll_rodin_job_status(
         &self,
         Parameters(req): Parameters<hyper3d::PollRodinJobStatusRequest>,
@@ -227,7 +265,10 @@ impl BlenderServer {
     ///
     /// Only give one of {task_uuid, request_id} based on the Hyper3D Rodin Mode!
     /// Return if the asset has been imported successfully.
-    #[tool(name = "import_generated_asset", description = "Import the asset generated by Hyper3D Rodin after the generation task is completed.")]
+    #[tool(
+        name = "import_generated_asset",
+        description = "Import the asset generated by Hyper3D Rodin after the generation task is completed."
+    )]
     fn import_generated_asset(
         &self,
         Parameters(req): Parameters<hyper3d::ImportGeneratedAssetRequest>,
@@ -237,7 +278,10 @@ impl BlenderServer {
 
     /// Check if Sketchfab integration is enabled in Blender.
     /// Returns a message indicating whether Sketchfab features are available.
-    #[tool(name = "get_sketchfab_status", description = "Check if Sketchfab integration is enabled in Blender.")]
+    #[tool(
+        name = "get_sketchfab_status",
+        description = "Check if Sketchfab integration is enabled in Blender."
+    )]
     fn get_sketchfab_status(
         &self,
         Parameters(req): Parameters<sketchfab::GetSketchfabStatusRequest>,
@@ -254,7 +298,10 @@ impl BlenderServer {
     /// - downloadable: Whether to include only downloadable models (default True)
     ///
     /// Returns a formatted list of matching models.
-    #[tool(name = "search_sketchfab_models", description = "Search for models on Sketchfab with optional filtering.")]
+    #[tool(
+        name = "search_sketchfab_models",
+        description = "Search for models on Sketchfab with optional filtering."
+    )]
     fn search_sketchfab_models(
         &self,
         Parameters(req): Parameters<sketchfab::SearchSketchfabModelsRequest>,
@@ -269,7 +316,10 @@ impl BlenderServer {
     /// - uid: The unique identifier of the Sketchfab model (obtained from search_sketchfab_models)
     ///
     /// Returns the model's thumbnail as an Image for visual confirmation.
-    #[tool(name = "get_sketchfab_model_preview", description = "Get a preview thumbnail of a Sketchfab model by its UID.")]
+    #[tool(
+        name = "get_sketchfab_model_preview",
+        description = "Get a preview thumbnail of a Sketchfab model by its UID."
+    )]
     fn get_sketchfab_model_preview(
         &self,
         Parameters(req): Parameters<sketchfab::GetSketchfabModelPreviewRequest>,
@@ -293,7 +343,10 @@ impl BlenderServer {
     ///
     /// Returns a message with import details including object names, dimensions, and bounding box.
     /// The model must be downloadable and you must have proper access rights.
-    #[tool(name = "download_sketchfab_model", description = "Download and import a Sketchfab model by its UID.")]
+    #[tool(
+        name = "download_sketchfab_model",
+        description = "Download and import a Sketchfab model by its UID."
+    )]
     fn download_sketchfab_model(
         &self,
         Parameters(req): Parameters<sketchfab::DownloadSketchfabModelRequest>,
@@ -303,7 +356,10 @@ impl BlenderServer {
 
     /// Check if Hunyuan3D integration is enabled in Blender.
     /// Returns a message indicating whether Hunyuan3D features are available.
-    #[tool(name = "get_hunyuan3d_status", description = "Check if Hunyuan3D integration is enabled in Blender.")]
+    #[tool(
+        name = "get_hunyuan3d_status",
+        description = "Check if Hunyuan3D integration is enabled in Blender."
+    )]
     fn get_hunyuan3d_status(
         &self,
         Parameters(req): Parameters<hunyuan::GetHunyuan3dStatusRequest>,
@@ -323,7 +379,10 @@ impl BlenderServer {
     /// - When successful, returns a JSON with job_id (format: "job_xxx") indicating the task is in progress
     /// - When the job completes, the status will change to "DONE" indicating the model has been imported
     /// - Returns error message if the operation fails
-    #[tool(name = "generate_hunyuan3d_model", description = "Generate 3D asset using Hunyuan3D by providing either text description, image reference, or both for the desired asset, and import the asset into Blender.")]
+    #[tool(
+        name = "generate_hunyuan3d_model",
+        description = "Generate 3D asset using Hunyuan3D by providing either text description, image reference, or both for the desired asset, and import the asset into Blender."
+    )]
     fn generate_hunyuan3d_model(
         &self,
         Parameters(req): Parameters<hunyuan::GenerateHunyuan3dModelRequest>,
@@ -341,7 +400,10 @@ impl BlenderServer {
     /// If status is "DONE", returns ResultFile3Ds, which is the generated ZIP model path
     /// When the status is "DONE", the response includes a field named ResultFile3Ds that contains the generated ZIP file path of the 3D model in OBJ format.
     /// This is a polling API, so only proceed if the status are finally determined ("DONE" or some failed state).
-    #[tool(name = "poll_hunyuan_job_status", description = "Check if the Hunyuan3D generation task is completed.")]
+    #[tool(
+        name = "poll_hunyuan_job_status",
+        description = "Check if the Hunyuan3D generation task is completed."
+    )]
     fn poll_hunyuan_job_status(
         &self,
         Parameters(req): Parameters<hunyuan::PollHunyuanJobStatusRequest>,
@@ -356,7 +418,10 @@ impl BlenderServer {
     /// - zip_file_url: The zip_file_url given in the generate model step.
     ///
     /// Return if the asset has been imported successfully.
-    #[tool(name = "import_generated_asset_hunyuan", description = "Import the asset generated by Hunyuan3D after the generation task is completed.")]
+    #[tool(
+        name = "import_generated_asset_hunyuan",
+        description = "Import the asset generated by Hunyuan3D after the generation task is completed."
+    )]
     fn import_generated_asset_hunyuan(
         &self,
         Parameters(req): Parameters<hunyuan::ImportGeneratedAssetHunyuanRequest>,
@@ -375,7 +440,10 @@ impl BlenderServer {
 #[prompt_router]
 impl BlenderServer {
     /// Defines the preferred strategy for creating assets in Blender
-    #[prompt(name = "asset_creation_strategy", description = "Defines the preferred strategy for creating assets in Blender")]
+    #[prompt(
+        name = "asset_creation_strategy",
+        description = "Defines the preferred strategy for creating assets in Blender"
+    )]
     fn asset_creation_strategy(&self) -> Result<Vec<PromptMessage>, rmcp::ErrorData> {
         Ok(vec![PromptMessage::new_text(
             Role::User,

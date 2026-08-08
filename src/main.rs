@@ -7,7 +7,7 @@
 
 use std::io::IsTerminal;
 
-use rmcp::{ServiceExt, transport::stdio};
+use rmcp::{transport::stdio, ServiceExt};
 
 use blender_mcp_rs::server::BlenderServer;
 
@@ -15,8 +15,7 @@ use blender_mcp_rs::server::BlenderServer;
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "info".into()),
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()),
         )
         .with_writer(std::io::stderr)
         .init();
@@ -32,7 +31,7 @@ async fn main() -> anyhow::Result<()> {
         );
     }
 
-    let service = BlenderServer::default();
+    let service = BlenderServer;
     let running = service.serve(stdio()).await?;
     running.waiting().await?;
     Ok(())

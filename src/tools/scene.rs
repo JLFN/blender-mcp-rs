@@ -76,12 +76,12 @@ pub fn get_object_info(conn: &BlenderConnection, req: &GetObjectInfoRequest) -> 
 /// Port of `get_viewport_screenshot`: asks Blender to render a PNG to a temp
 /// file, reads it back, removes it, and returns the bytes as an image content
 /// block.
-pub fn get_viewport_screenshot(conn: &BlenderConnection, req: &GetViewportScreenshotRequest) -> Result<CallToolResult, ErrorData> {
-
-    let temp_path = std::env::temp_dir().join(format!(
-        "blender_screenshot_{}.png",
-        std::process::id()
-    ));
+pub fn get_viewport_screenshot(
+    conn: &BlenderConnection,
+    req: &GetViewportScreenshotRequest,
+) -> Result<CallToolResult, ErrorData> {
+    let temp_path =
+        std::env::temp_dir().join(format!("blender_screenshot_{}.png", std::process::id()));
 
     let params = json!({
         "max_size": req.max_size,
@@ -107,9 +107,8 @@ pub fn get_viewport_screenshot(conn: &BlenderConnection, req: &GetViewportScreen
         ));
     }
 
-    let image_bytes = std::fs::read(&temp_path).map_err(|e| {
-        ErrorData::internal_error(format!("Screenshot failed: {e}"), None)
-    })?;
+    let image_bytes = std::fs::read(&temp_path)
+        .map_err(|e| ErrorData::internal_error(format!("Screenshot failed: {e}"), None))?;
 
     let _ = std::fs::remove_file(&temp_path);
 

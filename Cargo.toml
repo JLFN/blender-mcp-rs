@@ -1,6 +1,6 @@
 [package]
 name = "blender-mcp-rs"
-version = "1.8.0"
+version = "1.9.0"
 edition = "2021"
 rust-version = "1.88"
 description = "Blender integration through the Model Context Protocol (Rust port of blender-mcp)"

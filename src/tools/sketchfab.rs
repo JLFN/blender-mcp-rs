@@ -87,7 +87,10 @@ pub fn get_sketchfab_status(conn: &BlenderConnection, _req: &GetSketchfabStatusR
 }
 
 /// Port of `search_sketchfab_models`.
-pub fn search_sketchfab_models(conn: &BlenderConnection, req: &SearchSketchfabModelsRequest) -> String {
+pub fn search_sketchfab_models(
+    conn: &BlenderConnection,
+    req: &SearchSketchfabModelsRequest,
+) -> String {
     tracing::info!(
         query = %req.query,
         categories = ?req.categories,
@@ -126,7 +129,11 @@ pub fn search_sketchfab_models(conn: &BlenderConnection, req: &SearchSketchfabMo
         return format!("No models found matching '{}'", req.query);
     }
 
-    let mut out = format!("Found {} models matching '{}':\n\n", models.len(), req.query);
+    let mut out = format!(
+        "Found {} models matching '{}':\n\n",
+        models.len(),
+        req.query
+    );
     for model in &models {
         if model.is_null() {
             continue;
@@ -183,7 +190,10 @@ pub fn get_sketchfab_model_preview(
 ) -> Result<CallToolResult, ErrorData> {
     tracing::info!(uid = %req.uid, "getting Sketchfab model preview");
     let result = conn
-        .send_command("get_sketchfab_model_preview", json!({ "uid": req.uid }).as_object())
+        .send_command(
+            "get_sketchfab_model_preview",
+            json!({ "uid": req.uid }).as_object(),
+        )
         .map_err(|e| ErrorData::internal_error(format!("Failed to get preview: {e}"), None))?;
 
     if result.is_null() {
@@ -210,7 +220,10 @@ pub fn get_sketchfab_model_preview(
     base64::engine::general_purpose::STANDARD
         .decode(image_b64)
         .map_err(|e| {
-            ErrorData::internal_error(format!("Failed to get preview: invalid image data: {e}"), None)
+            ErrorData::internal_error(
+                format!("Failed to get preview: invalid image data: {e}"),
+                None,
+            )
         })?;
 
     let img_format = result
@@ -241,7 +254,10 @@ pub fn get_sketchfab_model_preview(
 }
 
 /// Port of `download_sketchfab_model`.
-pub fn download_sketchfab_model(conn: &BlenderConnection, req: &DownloadSketchfabModelRequest) -> String {
+pub fn download_sketchfab_model(
+    conn: &BlenderConnection,
+    req: &DownloadSketchfabModelRequest,
+) -> String {
     tracing::info!(uid = %req.uid, target_size = req.target_size, "downloading Sketchfab model");
     let result = match conn.send_command(
         "download_sketchfab_model",
@@ -300,10 +316,7 @@ pub fn download_sketchfab_model(conn: &BlenderConnection, req: &DownloadSketchfa
 
         if let Some(bbox) = result.get("world_bounding_box").and_then(|b| b.as_array()) {
             if bbox.len() >= 2 {
-                output.push_str(&format!(
-                    "Bounding box: min={}, max={}\n",
-                    bbox[0], bbox[1]
-                ));
+                output.push_str(&format!("Bounding box: min={}, max={}\n", bbox[0], bbox[1]));
             }
         }
 

@@ -39,20 +39,21 @@ impl BboxCondition {
         // Mimic Python's int-vs-float discrimination: a JSON number is "int"
         // when its serialized form has no fraction / exponent. sehe we compare
         // the underlying JSON Number (lossless) rather than an f64.
-        let all_ints = arr.iter().all(|v| is_json_int(v));
+        let all_ints = arr.iter().all(is_json_int);
 
         if all_ints {
             let values: Result<Vec<i64>, _> = arr
                 .iter()
-                .map(|v| v.as_i64().ok_or_else(|| "bbox_condition integer out of range".to_string()))
+                .map(|v| {
+                    v.as_i64()
+                        .ok_or_else(|| "bbox_condition integer out of range".to_string())
+                })
                 .collect();
             return values.map(|values| Some(BboxCondition { values }));
         }
 
         // Floats: reject any non-positive value first.
-        if let Some(bad) = arr.iter().find(|v| {
-            as_f64(v).is_some_and(|n| n <= 0.0)
-        }) {
+        if let Some(bad) = arr.iter().find(|v| as_f64(v).is_some_and(|n| n <= 0.0)) {
             let val = as_f64(bad).unwrap_or(0.0);
             return Err(format!(
                 "Incorrect number range: bbox must be bigger than zero! (got {val})"
@@ -61,10 +62,7 @@ impl BboxCondition {
 
         let nums: Vec<f64> = arr.iter().map(|v| as_f64(v).unwrap_or(0.0)).collect();
         let max = nums.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
-        let values = nums
-            .iter()
-            .map(|n| (n / max * 100.0) as i64)
-            .collect();
+        let values = nums.iter().map(|n| (n / max * 100.0) as i64).collect();
         Ok(Some(BboxCondition { values }))
     }
 
@@ -92,10 +90,7 @@ fn as_f64(v: &Value) -> Option<f64> {
 /// `isinstance(i, int)`.
 fn is_json_int(v: &Value) -> bool {
     match v {
-        Value::Number(n) => {
-            n.as_i64().is_some()
-                || n.as_u64().is_some()
-        }
+        Value::Number(n) => n.as_i64().is_some() || n.as_u64().is_some(),
         _ => false,
     }
 }

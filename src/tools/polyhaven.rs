@@ -100,8 +100,10 @@ pub fn get_polyhaven_status(conn: &BlenderConnection, _req: &GetPolyHavenStatusR
 }
 
 /// Port of `get_polyhaven_categories`.
-pub fn get_polyhaven_categories(conn: &BlenderConnection, req: &GetPolyHavenCategoriesRequest) -> String {
-
+pub fn get_polyhaven_categories(
+    conn: &BlenderConnection,
+    req: &GetPolyHavenCategoriesRequest,
+) -> String {
     let status = match conn.send_command("get_polyhaven_status", None) {
         Ok(s) => s,
         Err(e) => {
@@ -141,11 +143,7 @@ pub fn get_polyhaven_categories(conn: &BlenderConnection, req: &GetPolyHavenCate
     // Python `sorted(..., key=lambda x: x[1], reverse=True)` is a stable sort:
     // ties keep their insertion order.
     let mut idx: Vec<usize> = (0..items.len()).collect();
-    idx.sort_by(|&a, &b| {
-        items[b].1
-            .cmp(&items[a].1)
-            .then_with(|| a.cmp(&b))
-    });
+    idx.sort_by(|&a, &b| items[b].1.cmp(&items[a].1).then_with(|| a.cmp(&b)));
     let sorted: Vec<(String, i64)> = idx.iter().map(|&i| items[i].clone()).collect();
 
     let mut out = format!("Categories for {}:\n\n", req.asset_type);
@@ -156,7 +154,10 @@ pub fn get_polyhaven_categories(conn: &BlenderConnection, req: &GetPolyHavenCate
 }
 
 /// Port of `search_polyhaven_assets`.
-pub fn search_polyhaven_assets(conn: &BlenderConnection, req: &SearchPolyHavenAssetsRequest) -> String {
+pub fn search_polyhaven_assets(
+    conn: &BlenderConnection,
+    req: &SearchPolyHavenAssetsRequest,
+) -> String {
     let result = match conn.send_command(
         "search_polyhaven_assets",
         json!({ "asset_type": req.asset_type, "categories": req.categories }).as_object(),
@@ -192,10 +193,7 @@ pub fn search_polyhaven_assets(conn: &BlenderConnection, req: &SearchPolyHavenAs
 
     // assets: object of { asset_id: asset_data }
     let pairs: Vec<(String, Value)> = match assets.as_object() {
-        Some(map) => map
-            .iter()
-            .map(|(k, v)| (k.clone(), v.clone()))
-            .collect(),
+        Some(map) => map.iter().map(|(k, v)| (k.clone(), v.clone())).collect(),
         None => Vec::new(),
     };
     // Stable sort by download_count descending.
@@ -253,7 +251,10 @@ pub fn search_polyhaven_assets(conn: &BlenderConnection, req: &SearchPolyHavenAs
 }
 
 /// Port of `download_polyhaven_asset`.
-pub fn download_polyhaven_asset(conn: &BlenderConnection, req: &DownloadPolyHavenAssetRequest) -> String {
+pub fn download_polyhaven_asset(
+    conn: &BlenderConnection,
+    req: &DownloadPolyHavenAssetRequest,
+) -> String {
     let result = match conn.send_command(
         "download_polyhaven_asset",
         json!({
@@ -375,10 +376,7 @@ pub fn set_texture(conn: &BlenderConnection, req: &SetTextureRequest) -> String 
                     for conn in &connections {
                         // Python prints the plain string; `Value::to_string`
                         // would add JSON quote marks, so use `as_str`.
-                        output.push_str(&format!(
-                            "    {}\n",
-                            conn.as_str().unwrap_or_default()
-                        ));
+                        output.push_str(&format!("    {}\n", conn.as_str().unwrap_or_default()));
                     }
                 }
             }

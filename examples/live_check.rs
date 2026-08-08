@@ -37,7 +37,7 @@ fn main() {
                 .filter_map(|o| o.get("name").and_then(|n| n.as_str()))
                 .collect();
             println!("scene_info: {} objects, names = {names:?}", objects.len());
-            if !names.iter().any(|n| *n == "Cube.001") {
+            if !names.contains(&"Cube.001") {
                 println!("  FAIL: Cube.001 not found");
                 failures += 1;
             }
@@ -71,7 +71,10 @@ fn main() {
     }
 
     // 3. Error path: an unknown object surfaces the addon's message.
-    match c.send_command("get_object_info", json!({ "name": "NOT_THERE" }).as_object()) {
+    match c.send_command(
+        "get_object_info",
+        json!({ "name": "NOT_THERE" }).as_object(),
+    ) {
         Ok(_) => {
             println!("  FAIL: unknown object did not error");
             failures += 1;

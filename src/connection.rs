@@ -179,8 +179,15 @@ impl BlenderConnection {
     ///
     /// Holds the lock across send + receive so the response pairing by ordering
     /// on the stream can never be corrupted by a concurrent call.
-    pub fn send_command(&self, command_type: &str, params: Option<&Map<String, Value>>) -> Result<Value, BlenderError> {
-        let mut inner = self.inner.lock().map_err(|_| BlenderError::new("connection lock poisoned"))?;
+    pub fn send_command(
+        &self,
+        command_type: &str,
+        params: Option<&Map<String, Value>>,
+    ) -> Result<Value, BlenderError> {
+        let mut inner = self
+            .inner
+            .lock()
+            .map_err(|_| BlenderError::new("connection lock poisoned"))?;
         self.send_command_locked(&mut inner, command_type, params)
     }
 
@@ -220,7 +227,9 @@ impl BlenderConnection {
         // connection reconnects on the next real command.
         if let Err(e) = sock.write_all(payload.as_bytes()) {
             let message = match e.kind() {
-                ErrorKind::BrokenPipe | ErrorKind::ConnectionReset | ErrorKind::ConnectionAborted => {
+                ErrorKind::BrokenPipe
+                | ErrorKind::ConnectionReset
+                | ErrorKind::ConnectionAborted => {
                     format!("Connection to Blender lost: {e}")
                 }
                 _ => format!("Error communicating with Blender: {e}"),
@@ -325,7 +334,10 @@ impl BlenderConnection {
         let data = chunks;
         match serde_json::from_slice::<Value>(&data) {
             Ok(_) => {
-                tracing::info!(bytes = data.len(), "returning data after receive completion");
+                tracing::info!(
+                    bytes = data.len(),
+                    "returning data after receive completion"
+                );
                 inner.sock = Some(sock);
                 Ok(data)
             }

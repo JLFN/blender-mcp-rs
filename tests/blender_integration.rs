@@ -20,8 +20,7 @@ use serde_json::json;
 
 use blender_mcp_rs::connection::BlenderConnection;
 
-const DEFAULT_BLENDER: &str =
-    "/home/leandro/bin/blender-5.1.2-linux-x64/blender";
+const DEFAULT_BLENDER: &str = "/home/leandro/bin/blender-5.1.2-linux-x64/blender";
 
 fn blender_bin() -> Option<String> {
     if let Ok(path) = std::env::var("BLENDER_BIN") {
@@ -105,7 +104,13 @@ fn spawn_blender(port: u16) -> (BlenderGuard, mpsc::Receiver<String>) {
         }
     });
 
-    (BlenderGuard { child, _reader: reader }, rx)
+    (
+        BlenderGuard {
+            child,
+            _reader: reader,
+        },
+        rx,
+    )
 }
 
 fn wait_ready(rx: &mpsc::Receiver<String>) -> Option<String> {
@@ -167,10 +172,7 @@ fn real_blender_end_to_end() {
 
     // 2. Detailed mesh info for the cube.
     let obj = c
-        .send_command(
-            "get_object_info",
-            json!({ "name": "Cube.001" }).as_object(),
-        )
+        .send_command("get_object_info", json!({ "name": "Cube.001" }).as_object())
         .expect("get_object_info should succeed");
     assert_eq!(obj.get("type").and_then(|t| t.as_str()), Some("MESH"));
     assert_eq!(
@@ -182,7 +184,10 @@ fn real_blender_end_to_end() {
 
     // 3. Unknown object surfaces the addon's error.
     let err = c
-        .send_command("get_object_info", json!({ "name": "NOT_THERE" }).as_object())
+        .send_command(
+            "get_object_info",
+            json!({ "name": "NOT_THERE" }).as_object(),
+        )
         .expect_err("unknown object must error");
     assert!(
         err.message.contains("Object not found"),
@@ -192,7 +197,10 @@ fn real_blender_end_to_end() {
 
     // 4. Raw code execution round-trips stdout.
     let code_result = c
-        .send_command("execute_code", json!({ "code": "import bpy\nprint('INTEGRATION_OK')\n" }).as_object())
+        .send_command(
+            "execute_code",
+            json!({ "code": "import bpy\nprint('INTEGRATION_OK')\n" }).as_object(),
+        )
         .expect("execute_code should succeed");
     assert_eq!(
         code_result.get("result").and_then(|r| r.as_str()),
@@ -206,30 +214,29 @@ fn real_blender_end_to_end() {
     // These assertions are against the raw addon (no server-augmented hints),
     // which is why "good at Textures" and similar appendixes are absent.
     for (cmd, expect_enabled, expect_message_needle) in [
-        ("get_polyhaven_status", Some(true), "enabled and ready to use"),
         (
-            "get_hyper3d_status",
-            Some(false),
-            "API key is not given",
+            "get_polyhaven_status",
+            Some(true),
+            "enabled and ready to use",
         ),
-        (
-            "get_sketchfab_status",
-            Some(false),
-            "API key is not given",
-        ),
+        ("get_hyper3d_status", Some(false), "API key is not given"),
+        ("get_sketchfab_status", Some(false), "API key is not given"),
         // Hunyuan3D defaults to LOCAL_API mode, which needs no credentials.
-        ("get_hunyuan3d_status", Some(true), "enabled and ready to use"),
+        (
+            "get_hunyuan3d_status",
+            Some(true),
+            "enabled and ready to use",
+        ),
     ] {
-        let r = c.send_command(cmd, None).unwrap_or_else(|e| panic!("{cmd}: {e}"));
+        let r = c
+            .send_command(cmd, None)
+            .unwrap_or_else(|e| panic!("{cmd}: {e}"));
         assert_eq!(
             r.get("enabled").and_then(|e| e.as_bool()),
             expect_enabled,
             "{cmd} enabled flag: {r:?}"
         );
-        let msg = r
-            .get("message")
-            .and_then(|m| m.as_str())
-            .unwrap_or("");
+        let msg = r.get("message").and_then(|m| m.as_str()).unwrap_or("");
         assert!(
             msg.contains(expect_message_needle),
             "{cmd} message should contain '{expect_message_needle}': {msg}"
